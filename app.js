@@ -1,33 +1,66 @@
-var appSheetReader = require("./appSheetReader");
-var geoEncoder = require("./utils/geoEncoder");
-var distanceFinder = require("./utils/distanceFinder");
-var what = [];
-var data = appSheetReader.readSheet("EmployeeDetails.xlsx");
+const fs = require("fs");
+const appSheetReader = require("./appSheetReader");
+const geoEncoder = require("./utils/geoEncoder");
+const distanceFinder = require("./utils/distanceFinder");
+const newMethod = require("./newMethod");
 
-setTimeout(
-  () =>
-    data.forEach(d =>
-      geoEncoder.geocode(
-        d["Address(society,area,sub-urb,city)"],
-        (error, data) => {
-          if (!!error) {
-            console.log("error");
-          } else {
-            //console.log(data);
-            var coordinates = [data.longitude, data.latitude];
-            distanceFinder.dist(coordinates, (error, distance) => {
-              if (error) console.log("error 2");
-              else {
-                console.log(distance / 1000 + " km \t" + data.location + " ");
-                d.timepass = distance;
+var what = [];
+var exceldata = appSheetReader.readSheet("EmployeeDetails.xlsx");
+var counter = 0;
+
+var len = exceldata.length;
+setTimeout(() =>
+  exceldata.forEach(d =>
+    geoEncoder.geocode(
+      d["Address(society,area,sub-urb,city)"],
+      (error, data) => {
+        if (!!error) {
+          console.log("error");
+        } else {
+          //console.log(data);
+          var coordinates = [data.longitude, data.latitude];
+          distanceFinder.dist(coordinates, (error, distance) => {
+            if (error) console.log("error 2");
+            else {
+              console.log(distance / 1000 + " km \t" + data.location + " ");
+              d.distance = distance / 1000;
+              what.push(d);
+              counter++;
+              console.log(counter);
+              if (counter == len) {
+                fs.writeFile("output.json", JSON.stringify(what), error => {
+                  if (error) console.log(error);
+                  else console.log("sss ");
+                });
               }
-            });
-          }
+            }
+          });
         }
-      )
-    ),
-  0
+      }
+    )
+  )
 );
+
+// var newtry = data.map(d => {
+//   geoEncoder.geocode(d["Address(society,area,sub-urb,city)"], (error, data) => {
+//     if (!!error) {
+//       console.log("error");
+//     } else {
+//       //console.log(data);
+//       var coordinates = [data.longitude, data.latitude];
+//       distanceFinder.dist(coordinates, (error, distance) => {
+//         if (error) console.log("error 2");
+//         else {
+//           console.log(distance / 1000 + " km \t" + data.location + " ");
+//           d.distance = distance / 1000;
+//         }
+//       });
+//     }
+//   });
+//   return d;
+// });
+
+//newtry.forEach(n => console.log(n + " sss"));
 
 // data.forEach(d =>
 //   geoEncoder.geocode(d["Address(society,area,sub-urb,city)"], (error, data) => {
