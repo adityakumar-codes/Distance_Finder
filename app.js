@@ -4,14 +4,13 @@ const appSheetReader = require("./appSheetReader");
 const geoEncoder = require("./utils/geoEncoder");
 const distanceFinder = require("./utils/distanceFinder");
 const newMethod = require("./newMethod");
+const csvWriter = require("./csvWriter");
 
 var what = [];
 var exceldata = appSheetReader.readSheet("EmployeeDetails.xlsx");
 var len = exceldata.length;
 
 var counter = 0;
-
-
 
 exceldata.forEach(d =>
   geoEncoder.geocode(d["Address(society,area,sub-urb,city)"], (error, data) => {
@@ -24,7 +23,16 @@ exceldata.forEach(d =>
         else {
           console.log(distance / 1000 + " km \t" + data.location + " ");
           d.distance = distance / 1000;
+
+          console.log(d);
+
+          console.log(d["times"]);
+
+          if (d["times"] == 1) d.amount = d.distance * 10;
+          else d.amount = d.distance * 10 * 2;
+
           what.push(d);
+
           counter++;
           console.log(counter);
           if (counter == len) {
@@ -32,6 +40,7 @@ exceldata.forEach(d =>
               if (error) console.log(error);
               else console.log("sss ");
             });
+            csvWriter.toCSV(what);
           }
         }
       });
